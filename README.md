@@ -149,7 +149,6 @@ sqlite> select * from ecs limit 5;
 ## 贡献与支持
 - **Issues**：如在使用过程中遇到问题或有新需求，欢迎在仓库的 Issue 中提出。
 - **Pull Requests**：欢迎参与贡献新的功能、优化或文档修复。
-- **License**：本项目采用 MIT License / 其他协议，具体请查看 [LICENSE](https://chatgpt.com/c/LICENSE) 文件。
 
 ---
 
