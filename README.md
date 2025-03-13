@@ -83,11 +83,11 @@ database:
   path: "./cmdb.db"   # SQLite 数据库文件路径
 log_level: "info"     # 默认日志级别
         ```
-        
-    - `ecs_region_ids` 为数组，可同时拉取多个区域的 ECS 资源。
+
+ - `ecs_region_ids` 为数组，可同时拉取多个区域的 ECS 资源。
 
 3. **安装依赖**
-    
+
 ```bash
 go get github.com/mattn/go-sqlite3
 go get github.com/sirupsen/logrus
