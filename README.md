@@ -152,6 +152,18 @@ sqlite> select * from ecs limit 5;
 
 ---
 
+## 许可证说明
+
+本项目采用 [GNU General Public License (GPL)](./LICENSE) 进行开源发布。  
+这意味着：
+
+- 你可以自由复制、修改和分发本项目的源代码，但修改后的项目也必须继续以 GPL 或兼容的许可证进行发布；
+- 分发或发布时，需包含本项目的原始版权声明与 GPL 协议文本，并提供完整的源代码获取方式。
+
+请参阅 [LICENSE](./LICENSE) 文件获取详细条款。若你对 GPL 的使用及合规性有任何疑问，请查阅 [GNU 官网](https://www.gnu.org/licenses/) 或咨询相关专业人士。
+
+---
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=WillemCode/AliCloud_Resources&type=Date)](https://www.star-history.com/#WillemCode/AliCloud_Resources&Date)
