@@ -1,0 +1,29 @@
+database:
+  path: "~/cmdb.db"         # SQLite 数据库文件路径
+log_level: "info"           # 日志级别，可选 "debug", "info", "warn", "error"
+aliyun_accounts:
+  - name: "ECS阿里云"
+    access_key: "AK"
+    access_secret: "SK"
+    ecs_region_ids: "cn-beijing"
+    rds_region_ids: "cn-hangzhou"
+    slb_region_ids: "cn-shanghai"
+    polardb_region_ids: "nil"
+  - name: "RDS阿里云"
+    access_key: "AK"
+    access_secret: "SK"
+    ecs_region_ids: ""
+    rds_region_ids:
+      - "cn-beijing"
+      - "cn-hangzhou"
+      - "cn-shanghai"
+    slb_region_ids: ""
+    polardb_region_ids: ""
+  - name: "..."
+    access_key: "..."
+    access_secret: "..."
+    ecs_region_ids:
+      - "cn-hangzhou"
+    rds_region_ids: "cn-beijing"
+    slb_region_ids: "nil"
+    polardb_region_ids: "nil"
