@@ -63,10 +63,13 @@
 git clone https://github.com/WillemCode/AliCloud_Resources.git
 cd AliCloud_Resources
 ```
+
     
 2. **修改配置**
-    
-    - 打开 `config/config.yaml`，填入你的阿里云账户信息，比如：
+
+
+* 打开 `config/config.yaml` ，填入你的阿里云账户信息，比如：
+
         
 ```yaml
 aliyun_accounts:
@@ -82,11 +85,14 @@ aliyun_accounts:
 database:
   path: "./cmdb.db"   # SQLite 数据库文件路径
 log_level: "info"     # 默认日志级别
-        ```
+```
 
- - `ecs_region_ids` 为数组，可同时拉取多个区域的 ECS 资源。
+
+* `ecs_region_ids` 为数组，可同时拉取多个区域的 ECS 资源。
+
 
 3. **安装依赖**
+
 
 ```bash
 go get github.com/mattn/go-sqlite3
