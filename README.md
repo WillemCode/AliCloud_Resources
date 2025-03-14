@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-在大型企业或团队中，往往会存在多个阿里云账户，这些账户分散在不同的部门或项目组中。日常需要对云资源（ECS、RDS、SLB、PolarDB 等）进行管理和查询，尤其当服务器数量庞大且分布在多个区域时，手动维护繁琐、容易出错，而且对于新同事极不友好。
+在大型企业或团队中，往往会存在多个阿里云账户，这些账户分散在不同的部门或项目组中。日常需要对云资源（ECS、RDS、SLB、PolarDB 等）进行管理和查询，尤其当服务器数量庞大且分布在多个区域时，手动维护繁琐、容易出错。
 
 本项目的目标是将企业内部的多个阿里云账户资源统一整合到本地数据库（如 SQLite）中，通过脚本或未来的自助查询页面，让用户一键查询任何服务器的详细信息，以及它所在的具体阿里云账户及区域。
 
@@ -64,6 +64,7 @@ git clone https://github.com/WillemCode/AliCloud_Resources.git
 cd AliCloud_Resources
 ```
 
+> 注意⚠️: go version go1.23+
     
 2. **修改配置**
 
@@ -83,7 +84,7 @@ aliyun_accounts:
     slb_region_id: "cn-hangzhou"
     polardb_region_id: "cn-beijing"
 database:
-  path: "./cmdb.db"   # SQLite 数据库文件路径
+  path: "./sqlite.db"   # SQLite 数据库文件路径
 log_level: "info"     # 默认日志级别
 ```
 
@@ -110,20 +111,41 @@ go get github.com/spf13/viper
 ```bash
 go run cmd/main.go      // 运行
 ```
-    
-    - 程序会根据 `config.yaml` 加载配置、初始化日志和数据库，然后依次同步 ECS、RDS、SLB、PolarDB 等资源，并将数据存储到本地数据库。
-    - 默认在 `./cmdb.db` 中生成 SQLite 数据库文件（可在配置中修改路径）。
+
+* 程序会根据 `config.yaml` 加载配置、初始化日志和数据库，然后依次同步 ECS、RDS、SLB、PolarDB 等资源，并将数据存储到本地数据库。
+* 默认在 `./sqlite.db` 中生成 SQLite 数据库文件（可在配置中修改路径）。
+
 5. **查看结果**
-    
-    - 你可以通过任意 SQLite 客户端（或在代码中）查询采集到的 ECS、RDS、SLB 等资源信息：
-        
+
+* 你可以通过任意 SQLite 客户端（或在代码中）查询采集到的 ECS、RDS、SLB 等资源信息：
+
 ```bash
-sqlite3 cmdb.db
+sqlite3 sqlite.db
 sqlite> .tables
 ecs   rds   slb   polardb
 sqlite> select * from ecs limit 5;
 ```
-        
+
+6. **编译构建**
+
+Linux/Mac 系统
+```
+cd cmd/
+go build -o AliCloud_Resource
+
+ARM芯片
+GOOS=darwin GOARCH=arm64 go build -o AliCloud_Resource
+
+AMD芯片
+GOOS=darwin GOARCH=amd64 go build -o AliCloud_Resource
+```
+
+Windows
+```
+cd cmd/
+GOOS=windows GOARCH=amd64 go build -o AliCloud_Resource.exe
+```
+
 ## 使用场景
 
 1. **企业/团队内多账户管理**
