@@ -1,10 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/WillemCode/AliCloud_Resources/internal/services"
 	"github.com/WillemCode/AliCloud_Resources/pkg/config"
 	"github.com/WillemCode/AliCloud_Resources/pkg/database"
 	"github.com/WillemCode/AliCloud_Resources/pkg/logger"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -30,13 +33,6 @@ func main() {
 
 	// 5. 遍历配置中的每个阿里云账户，调用相应服务同步数据
 	for _, account := range cfg.AliyunAccounts {
-		// 同步 ECS 信息
-		// if account.ECSRegionId != "" && account.ECSRegionId != "nil" {
-		// 	if err := services.SyncECSInfo(account.Name, account.ECSRegionId, account.AccessKey, account.AccessSecret); err != nil {
-		// 		// 记录错误但不中断，继续处理其他服务
-		// 		logger.Log.Errorf("ECS 同步失败 (账户=%s): %v", account.Name, err)
-		// 	}
-		// }
 
 		// 同步 ECS 信息
 		if len(account.ECSRegionIds) > 0 {
@@ -68,21 +64,65 @@ func main() {
 		}
 	}
 
-	// 6. （可选）启动 Gin Web 服务，提供RESTful查询接口
-	//    如果运行程序时传入 "serve" 参数，则启动 HTTP 服务
-	// if len(os.Args) > 1 && os.Args[1] == "serve" {
-	// 	router := gin.Default()
-	// 	// 示例：提供 GET /ecs 接口，返回所有 ECS 实例信息
-	// 	router.GET("/ecs", func(c *gin.Context) {
-	// 		ecsRecords, err := database.ListECSRecords()
-	// 		if err != nil {
-	// 			logger.Log.Error("查询 ECS 数据失败: ", err)
-	// 			c.JSON(500, gin.H{"error": "failed to query ECS data"})
-	// 			return
-	// 		}
-	// 		c.JSON(200, ecsRecords)
-	// 	})
-	// 	logger.Log.Info("启动 HTTP 服务，监听 :8080 ...")
-	// 	_ = router.Run(":8080")
-	// }
+	// 6. 启动 Gin Web 服务，提供RESTful查询接口
+	if len(os.Args) > 1 && os.Args[1] == "serve" {
+		router := gin.Default()
+
+		// 添加 CORS 中间件
+		router.Use(func(c *gin.Context) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			if c.Request.Method == "OPTIONS" {
+				c.AbortWithStatus(204)
+				return
+			}
+			c.Next()
+		})
+
+		// API 路由
+		router.GET("/ecs", func(c *gin.Context) {
+			ecsRecords, err := database.ListECSRecords()
+			if err != nil {
+				logger.Log.Error("查询 ECS 数据失败: ", err)
+				c.JSON(500, gin.H{"error": "failed to query ECS data"})
+				return
+			}
+			c.JSON(200, ecsRecords)
+		})
+
+		// 添加其他资源的 API 路由
+		router.GET("/rds", func(c *gin.Context) {
+			rdsRecords, err := database.ListRDSRecords()
+			if err != nil {
+				logger.Log.Error("查询 RDS 数据失败: ", err)
+				c.JSON(500, gin.H{"error": "failed to query RDS data"})
+				return
+			}
+			c.JSON(200, rdsRecords)
+		})
+
+		router.GET("/slb", func(c *gin.Context) {
+			slbRecords, err := database.ListSLBRecords()
+			if err != nil {
+				logger.Log.Error("查询 SLB 数据失败: ", err)
+				c.JSON(500, gin.H{"error": "failed to query SLB data"})
+				return
+			}
+			c.JSON(200, slbRecords)
+		})
+
+		router.GET("/polardb", func(c *gin.Context) {
+			polarDBRecords, err := database.ListPolarDBRecords()
+			if err != nil {
+				logger.Log.Error("查询 PolarDB 数据失败: ", err)
+				c.JSON(500, gin.H{"error": "failed to query PolarDB data"})
+				return
+			}
+			c.JSON(200, polarDBRecords)
+		})
+
+		logger.Log.Info("启动 HTTP 服务，监听 :8080 ...")
+		_ = router.Run(":8080")
+	}
 }
