@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/WillemCode/AliCloud_Resources/internal/api"
 	"github.com/WillemCode/AliCloud_Resources/internal/services"
 	"github.com/WillemCode/AliCloud_Resources/pkg/config"
 	"github.com/WillemCode/AliCloud_Resources/pkg/database"
@@ -31,7 +32,7 @@ func main() {
 	}
 	defer database.Close() // 程序退出时关闭数据库
 
-	// 5. 遍历配置中的每个阿里云账户，调用相应服务同步数据
+	// // 5. 遍历配置中的每个阿里云账户，调用相应服务同步数据
 	for _, account := range cfg.AliyunAccounts {
 
 		// 同步 ECS 信息
@@ -68,59 +69,8 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "serve" {
 		router := gin.Default()
 
-		// 添加 CORS 中间件
-		router.Use(func(c *gin.Context) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-			c.Next()
-		})
-
-		// API 路由
-		router.GET("/ecs", func(c *gin.Context) {
-			ecsRecords, err := database.ListECSRecords()
-			if err != nil {
-				logger.Log.Error("查询 ECS 数据失败: ", err)
-				c.JSON(500, gin.H{"error": "failed to query ECS data"})
-				return
-			}
-			c.JSON(200, ecsRecords)
-		})
-
-		// 添加其他资源的 API 路由
-		router.GET("/rds", func(c *gin.Context) {
-			rdsRecords, err := database.ListRDSRecords()
-			if err != nil {
-				logger.Log.Error("查询 RDS 数据失败: ", err)
-				c.JSON(500, gin.H{"error": "failed to query RDS data"})
-				return
-			}
-			c.JSON(200, rdsRecords)
-		})
-
-		router.GET("/slb", func(c *gin.Context) {
-			slbRecords, err := database.ListSLBRecords()
-			if err != nil {
-				logger.Log.Error("查询 SLB 数据失败: ", err)
-				c.JSON(500, gin.H{"error": "failed to query SLB data"})
-				return
-			}
-			c.JSON(200, slbRecords)
-		})
-
-		router.GET("/polardb", func(c *gin.Context) {
-			polarDBRecords, err := database.ListPolarDBRecords()
-			if err != nil {
-				logger.Log.Error("查询 PolarDB 数据失败: ", err)
-				c.JSON(500, gin.H{"error": "failed to query PolarDB data"})
-				return
-			}
-			c.JSON(200, polarDBRecords)
-		})
+		// 设置API路由
+		api.SetupRoutes(router)
 
 		logger.Log.Info("启动 HTTP 服务，监听 :8080 ...")
 		_ = router.Run(":8080")

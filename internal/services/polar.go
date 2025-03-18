@@ -72,10 +72,11 @@ func SyncPolarDBInfo(accountName string, polarRegionIds []string, accessKey stri
 
 					// 构造 PolarDBRecord
 					rec := database.PolarDBRecord{
-						DBClusterID:      cluster.DBClusterId,
+						InstanceID:       cluster.DBClusterId,
 						CloudName:        accountName,
 						Engine:           cluster.Engine,
 						RegionID:         cluster.RegionId,
+						Status:           cluster.DBClusterStatus,
 						DBNodeCount:      int64(cluster.DBNodeNumber),
 						Description:      cluster.DBClusterDescription,
 						MemorySize:       memorySize,

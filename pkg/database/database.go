@@ -75,6 +75,7 @@ func Init(dbPath string) error {
 		cloud_name TEXT,
         engine TEXT,
         region_id TEXT,
+		db_cluster_status TEXT,
         dbnode_number INTEGER,
         dbcluster_description TEXT,
         memory_size INTEGER,
@@ -132,7 +133,7 @@ func SaveECSRecords(records []ECSRecord) error {
 // 查询所有 ECS 记录（用于 API 层示例）
 func ListECSRecords() ([]ECSRecord, error) {
 	rows, err := db.Query(
-		"SELECT instance_id, instance_name, status, region_id, os_name, instance_type, cpu, memory, public_ip, private_ip FROM ecs",
+		"SELECT instance_id, cloud_name, instance_name, status, region_id, os_name, instance_type, cpu, memory, public_ip, private_ip FROM ecs",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询 ECS 表失败: %w", err)
@@ -143,7 +144,7 @@ func ListECSRecords() ([]ECSRecord, error) {
 	for rows.Next() {
 		var rec ECSRecord
 		// 将查询结果的每一行扫描到 ECSRecord 结构体
-		err := rows.Scan(&rec.InstanceID, &rec.InstanceName, &rec.Status, &rec.RegionID,
+		err := rows.Scan(&rec.InstanceID, &rec.CloudName, &rec.InstanceName, &rec.Status, &rec.RegionID,
 			&rec.OSName, &rec.InstanceType, &rec.CPU, &rec.Memory, &rec.PublicIP, &rec.PrivateIP)
 		if err != nil {
 			return nil, fmt.Errorf("读取 ECS 行数据失败: %w", err)
@@ -208,7 +209,7 @@ func ListRDSRecords() ([]RDSRecord, error) {
 
 // SLB 数据结构和保存
 type SLBRecord struct {
-	LoadBalancerID   string
+	InstanceID       string
 	CloudName        string
 	LoadBalancerName string
 	IPAddress        string
@@ -224,10 +225,10 @@ func SaveSLBRecords(records []SLBRecord) error {
 			`INSERT OR REPLACE INTO slb 
              (lb_id, cloud_name, lb_name, ip_address, band_width, network_type, region_id, lb_status)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			rec.LoadBalancerID, rec.CloudName, rec.LoadBalancerName, rec.IPAddress, rec.Bandwidth, rec.NetworkType, rec.RegionID, rec.Status,
+			rec.InstanceID, rec.CloudName, rec.LoadBalancerName, rec.IPAddress, rec.Bandwidth, rec.NetworkType, rec.RegionID, rec.Status,
 		)
 		if err != nil {
-			return fmt.Errorf("插入 SLB 记录失败 (LoadBalancerID=%s): %w", rec.LoadBalancerID, err)
+			return fmt.Errorf("插入 SLB 记录失败 (LoadBalancerID=%s): %w", rec.InstanceID, err)
 		}
 	}
 	return nil
@@ -247,7 +248,7 @@ func ListSLBRecords() ([]SLBRecord, error) {
 	for rows.Next() {
 		var rec SLBRecord
 		// 将查询结果的每一行扫描到 SLBRecord 结构体
-		err := rows.Scan(&rec.LoadBalancerID, &rec.CloudName, &rec.LoadBalancerName, &rec.IPAddress,
+		err := rows.Scan(&rec.InstanceID, &rec.CloudName, &rec.LoadBalancerName, &rec.IPAddress,
 			&rec.Bandwidth, &rec.NetworkType, &rec.RegionID, &rec.Status)
 		if err != nil {
 			return nil, fmt.Errorf("读取 SLB 行数据失败: %w", err)
@@ -259,10 +260,11 @@ func ListSLBRecords() ([]SLBRecord, error) {
 
 // PolarDB 数据结构和保存
 type PolarDBRecord struct {
-	DBClusterID      string
+	InstanceID       string
 	CloudName        string
 	Engine           string
 	RegionID         string
+	Status           string
 	DBNodeCount      int64
 	Description      string
 	MemorySize       int64
@@ -273,12 +275,12 @@ func SavePolarDBRecords(records []PolarDBRecord) error {
 	for _, rec := range records {
 		_, err := db.Exec(
 			`INSERT OR REPLACE INTO polardb 
-             (dbcluster_id, cloud_name, engine, region_id, dbnode_number, dbcluster_description, memory_size, connection_string)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			rec.DBClusterID, rec.CloudName, rec.Engine, rec.RegionID, rec.DBNodeCount, rec.Description, rec.MemorySize, rec.ConnectionString,
+             (dbcluster_id, cloud_name, engine, region_id, db_cluster_status, dbnode_number, dbcluster_description, memory_size, connection_string)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			rec.InstanceID, rec.CloudName, rec.Engine, rec.RegionID, rec.Status, rec.DBNodeCount, rec.Description, rec.MemorySize, rec.ConnectionString,
 		)
 		if err != nil {
-			return fmt.Errorf("插入 PolarDB 记录失败 (DBClusterID=%s): %w", rec.DBClusterID, err)
+			return fmt.Errorf("插入 PolarDB 记录失败 (DBClusterID=%s): %w", rec.InstanceID, err)
 		}
 	}
 	return nil
@@ -287,7 +289,7 @@ func SavePolarDBRecords(records []PolarDBRecord) error {
 // 查询所有 Polardb 记录（用于 API 层示例）
 func ListPolarDBRecords() ([]PolarDBRecord, error) {
 	rows, err := db.Query(
-		"SELECT dbcluster_id, cloud_name, engine, region_id, dbnode_number, dbcluster_description, memory_size, connection_string FROM polardb",
+		"SELECT dbcluster_id, cloud_name, engine, region_id, db_cluster_status, dbnode_number, dbcluster_description, memory_size, connection_string FROM polardb",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询 PolarDB 表失败: %w", err)
@@ -298,7 +300,7 @@ func ListPolarDBRecords() ([]PolarDBRecord, error) {
 	for rows.Next() {
 		var rec PolarDBRecord
 		// 将查询结果的每一行扫描到 PolarDBRecord 结构体
-		err := rows.Scan(&rec.DBClusterID, &rec.CloudName, &rec.Engine, &rec.RegionID,
+		err := rows.Scan(&rec.InstanceID, &rec.CloudName, &rec.Engine, &rec.RegionID, &rec.Status,
 			&rec.DBNodeCount, &rec.Description, &rec.MemorySize, &rec.ConnectionString)
 		if err != nil {
 			return nil, fmt.Errorf("读取 PolarDB 行数据失败: %w", err)
