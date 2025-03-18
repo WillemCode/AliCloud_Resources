@@ -49,7 +49,7 @@ func SyncSLBInfo(accountName string, slbRegionIds []string, accessKey string, ac
 				for _, lb := range response.LoadBalancers.LoadBalancer {
 					// 构造 SLBRecord
 					rec := database.SLBRecord{
-						LoadBalancerID:   lb.LoadBalancerId,
+						InstanceID:       lb.LoadBalancerId,
 						CloudName:        accountName,
 						LoadBalancerName: lb.LoadBalancerName,
 						IPAddress:        lb.Address,
