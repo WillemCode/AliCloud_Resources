@@ -35,6 +35,7 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/ecs", handleECSList)
 	router.GET("/rds", handleRDSList)
 	router.GET("/slb", handleSLBList)
+	router.GET("/redis", handleRedisList)
 	router.GET("/polardb", handlePolarDBList)
 	router.GET("/search", handleSearch)
 }
@@ -99,6 +100,29 @@ func handleSLBList(c *gin.Context) {
 	// 应用分页
 	total := len(slbRecords)
 	paginatedData := applyPagination(slbRecords, page, pageSize)
+
+	c.JSON(200, PaginatedResponse{
+		Data:     paginatedData,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	})
+}
+
+// 处理 Tair Redis 列表请求
+func handleRedisList(c *gin.Context) {
+	page, pageSize := getPaginationParams(c)
+
+	RedisRecords, err := database.ListRedisRecords()
+	if err != nil {
+		logger.Log.Error("查询 Tair Redis 数据失败: ", err)
+		c.JSON(500, gin.H{"error": "failed to query SLB data"})
+		return
+	}
+
+	// 应用分页
+	total := len(RedisRecords)
+	paginatedData := applyPagination(RedisRecords, page, pageSize)
 
 	c.JSON(200, PaginatedResponse{
 		Data:     paginatedData,

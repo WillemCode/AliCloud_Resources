@@ -16,6 +16,7 @@ type Account struct {
 	ECSRegionIds     []string `yaml:"ecs_region_ids" mapstructure:"ecs_region_ids"`         // ECS 服务区域 ID
 	RDSRegionIds     []string `yaml:"rds_region_ids" mapstructure:"rds_region_ids"`         // RDS 服务区域 ID
 	SLBRegionIds     []string `yaml:"slb_region_ids" mapstructure:"slb_region_ids"`         // SLB 服务区域 ID
+	RedisRegionIds   []string `yaml:"redis_region_ids" mapstructure:"redis_region_ids"`     // Tair Redis 服务区域 ID
 	PolarDBRegionIds []string `yaml:"polardb_region_ids" mapstructure:"polardb_region_ids"` // PolarDB 服务区域 ID
 }
 
@@ -39,7 +40,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		if envPath := os.Getenv("CONFIG_PATH"); envPath != "" {
 			configPath = envPath
 		} else {
-			configPath = "../config.yaml" // 默认配置文件路径
+			configPath = "./config.yaml" // 默认配置文件路径
 		}
 	}
 

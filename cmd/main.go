@@ -56,6 +56,13 @@ func main() {
 				logger.Log.Errorf("SLB 同步失败 (账户=%s): %v", account.Name, err)
 			}
 		}
+		// 同步 Tair Redis 信息
+		if len(account.RedisRegionIds) > 0 {
+			// if account.RedisRegionIds != "" && account.RDSRegionId != "nil" {
+			if err := services.SyncRedisInfo(account.Name, account.RedisRegionIds, account.AccessKey, account.AccessSecret); err != nil {
+				logger.Log.Errorf("Tair 同步失败 (账户=%s): %v", account.Name, err)
+			}
+		}
 		// 同步 PolarDB 信息
 		if len(account.PolarDBRegionIds) > 0 {
 			// if account.PolarDBRegionId != "" && account.PolarDBRegionId != "nil" {
@@ -72,7 +79,7 @@ func main() {
 		// 设置API路由
 		api.SetupRoutes(router)
 
-		logger.Log.Info("启动 HTTP 服务，监听 :8080 ...")
-		_ = router.Run(":8080")
+		logger.Log.Info("启动 HTTP 服务，监听 :8088 ...")
+		_ = router.Run(":8088")
 	}
 }

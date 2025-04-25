@@ -35,6 +35,7 @@ func Init(dbPath string) error {
         memory INTEGER,
         public_ip TEXT,
         private_ip TEXT,
+		remarks TEXT,
 		login_user TEXT,
 		login_passwd TEXT
     );`)
@@ -50,10 +51,31 @@ func Init(dbPath string) error {
         status TEXT,
         memory INTEGER,
         instance_description TEXT,
-        connection_string TEXT
+        connection_string TEXT,
+		remarks TEXT
     );`)
 	if err != nil {
 		return fmt.Errorf("创建 rds 表失败: %w", err)
+	}
+	// Tair Redis 实例信息表
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS redis (
+		instance_id TEXT PRIMARY KEY,
+		cloud_name TEXT,
+		instance_name TEXT,
+		port INTEGER,
+		region_id TEXT,
+		capacity INTEGER,
+		instance_class TEXT,
+		qps INTEGER,
+		band_width INTEGER,
+		connections INTEGER,
+		instance_type TEXT,
+		connection_string TEXT,
+		ip_address TEXT,
+		remarks TEXT
+	);`)
+	if err != nil {
+		return fmt.Errorf("创建 Tair 表失败: %w", err)
 	}
 	// SLB 实例信息表
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS slb (
@@ -64,7 +86,8 @@ func Init(dbPath string) error {
         band_width INTEGER,
         network_type TEXT,
         region_id TEXT,
-        lb_status TEXT
+        lb_status TEXT,
+		remarks TEXT
     );`)
 	if err != nil {
 		return fmt.Errorf("创建 slb 表失败: %w", err)
@@ -79,7 +102,8 @@ func Init(dbPath string) error {
         dbnode_number INTEGER,
         dbcluster_description TEXT,
         memory_size INTEGER,
-        connection_string TEXT
+        connection_string TEXT,
+		remarks TEXT
     );`)
 	if err != nil {
 		return fmt.Errorf("创建 polardb 表失败: %w", err)
@@ -252,6 +276,63 @@ func ListSLBRecords() ([]SLBRecord, error) {
 			&rec.Bandwidth, &rec.NetworkType, &rec.RegionID, &rec.Status)
 		if err != nil {
 			return nil, fmt.Errorf("读取 SLB 行数据失败: %w", err)
+		}
+		results = append(results, rec)
+	}
+	return results, nil
+}
+
+// Tair 数据结构和保存
+type RedisRecord struct {
+	InstanceID       string
+	CloudName        string
+	InstanceName     string
+	Port             int64
+	RegionId         string
+	Capacity         int64
+	InstanceClass    string
+	QPS              int64
+	Bandwidth        int64
+	Connections      int64
+	InstanceType     string
+	ConnectionString string
+	IPAddress        string
+}
+
+func SaveRedisRecords(records []RedisRecord) error {
+	for _, rec := range records {
+		_, err := db.Exec(
+			`INSERT OR REPLACE INTO redis 
+             (instance_id, cloud_name, instance_name, port, region_id, capacity, instance_class, qps, band_width, connections, instance_type, connection_string, ip_address)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			rec.InstanceID, rec.CloudName, rec.InstanceName, rec.Port, rec.RegionId, rec.Capacity, rec.InstanceClass, rec.QPS,
+			rec.Bandwidth, rec.Connections, rec.InstanceType, rec.ConnectionString, rec.IPAddress,
+		)
+		if err != nil {
+			return fmt.Errorf("插入 Tair Redis 记录失败 (InstanceID=%s): %w", rec.InstanceID, err)
+		}
+	}
+	return nil
+}
+
+// 查询所有 Tair Redis 记录（用于 API 层示例）
+func ListRedisRecords() ([]RedisRecord, error) {
+	rows, err := db.Query(
+		"SELECT instance_id, cloud_name, instance_name, port, region_id, capacity, instance_class, qps, band_width, connections, instance_type, connection_string, ip_address FROM redis",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("查询 Tair Redis 表失败: %w", err)
+	}
+	defer rows.Close()
+
+	var results []RedisRecord
+	for rows.Next() {
+		var rec RedisRecord
+		// 将查询结果的每一行扫描到 RDSRecord 结构体
+		err := rows.Scan(&rec.InstanceID, &rec.CloudName, &rec.InstanceName, &rec.Port, &rec.RegionId, &rec.Capacity, &rec.InstanceClass, &rec.QPS,
+			&rec.Bandwidth, &rec.Connections, &rec.InstanceType, &rec.ConnectionString, &rec.IPAddress)
+		if err != nil {
+			return nil, fmt.Errorf("读取 Tair Redis 行数据失败: %w", err)
 		}
 		results = append(results, rec)
 	}

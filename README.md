@@ -80,19 +80,31 @@ cd AliCloud_Resources
 
         
 ```yaml
-aliyun_accounts:
-  - name: "AccountA"
-    access_key: "YourAccessKey"
-    access_secret: "YourSecret"
-    ecs_region_ids:
-      - "cn-hangzhou"
-      - "cn-beijing"
-    rds_region_id: "cn-beijing"
-    slb_region_id: "cn-hangzhou"
-    polardb_region_id: "cn-beijing"
 database:
-  path: "./sqlite.db"   # SQLite 数据库文件路径
-log_level: "info"     # 默认日志级别
+  path: "/Users/w/Work.localized/Code/docker/sqlite/cmdb.db"         # SQLite 数据库文件路径
+log_level: "info"           # 日志级别，可选 "debug", "info", "warn", "error"
+aliyun_accounts:
+  - name: "业务一阿里云"
+    access_key: ""           # 阿里云 AK
+    access_secret: ""        # 阿里云 SK 
+    ecs_region_ids: "cn-hangzhou"
+    rds_region_ids: "cn-hangzhou"
+    slb_region_ids: "cn-hangzhou"
+    redis_region_ids: "cn-hangzhou"
+    polardb_region_ids: "cn-hangzhou"
+  - name: "业务二阿里云"
+    access_key: ""
+    access_secret: ""
+    ecs_region_ids:           # 账户下资源在多个区域下
+      - "cn-beijing"
+      - "cn-hangzhou"
+    rds_region_ids: "cn-beijing"
+    slb_region_ids: "nil"     # 账户下没有该资源
+    redis_region_ids: "cn-beijing"
+    polardb_region_ids: "nil"
+  - name: "业务三阿里云"
+     
+      ······
 ```
 
 
@@ -103,14 +115,15 @@ log_level: "info"     # 默认日志级别
 
 
 ```bash
-go get github.com/mattn/go-sqlite3
+go get github.com/spf13/viper
 go get github.com/sirupsen/logrus
+go get github.com/mattn/go-sqlite3
 go get github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
 go get github.com/aliyun/alibaba-cloud-sdk-go/services/ecs
-go get github.com/aliyun/alibaba-cloud-sdk-go/services/polardb
 go get github.com/aliyun/alibaba-cloud-sdk-go/services/rds
 go get github.com/aliyun/alibaba-cloud-sdk-go/services/slb
-go get github.com/spf13/viper
+go get github.com/aliyun/alibaba-cloud-sdk-go/services/polardb
+go get github.com/aliyun/alibaba-cloud-sdk-go/services/r_kvstore
 ```
     
 4. **运行同步**
@@ -152,6 +165,19 @@ Windows
 cd cmd/
 GOOS=windows GOARCH=amd64 go build -o AliCloud_Resource.exe
 ```
+
+## 项目截图
+![同步数据](./images/同步数据.png)
+![启动web](./images/启动web.png)
+![web界面](./images/web界面.png)
+![所有表](./images/所有表.png)
+![ecs](./images/ECS表.png)
+![rds](./images/rds表.png)
+![slb表](./images/slb表.png)
+![redis表](./images/redis表.png)
+![polardb表](./images/polardb表.png)
+
+
 
 ## 使用场景
 
